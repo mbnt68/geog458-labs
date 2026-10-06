@@ -4,7 +4,7 @@
 King County, Washington
 
 ## Geographic question
-How does access to beaches vary across different neighborhoods?
+How does access to beaches vary across different neighborhoods and areas?
 
 ## Possible data
 Population Data, beach boundaries, and neighborhood boundaries.
