@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+    <meta charset='utf-8' />
+    // Creates title
+    <title>my First Map</title>
+    <meta name='viewport' content='width=device-width, initial-scale=1' />
+    // imports the Mapbox API
+    <link href="https://api.mapbox.com/mapbox-gl-js/v3.6.0/mapbox-gl.css" rel="stylesheet">
+    // imports the Mapbox stylesheet
+    <script src="https://api.mapbox.com/mapbox-gl-js/v3.6.0/mapbox-gl.js"></script>
+    <style>
+        body { margin: 0; padding: 0; } 
+        #map { position: absolute; top: 0; bottom: 0; width: 100%; } 
+   </style>
+</head>
+<body>
+   <div id='map'></div>
+   <script>
+      // Accesses the mapbox API
+      mapboxgl.accessToken = 'pk.eyJ1IjoibWJudDY4IiwiYSI6ImNtdXd2eGVqZjAwM2QzNHEwcjlsaHpmcngifQ.OkO7lFPf7XsTQC4krb6vGQ';
+      // Initialize the Mapbox instance and render the map inside the '#map' element.
+      const mymap = new mapboxgl.Map({
+             container: 'map', // establishes the map foundation
+             //style: 'mapbox://styles/mapbox/light-v11',
+             // projection: 'globe', //Display the map as a globe since satellite-v9 defaults to Mercator
+             center: [-122.320038, 47.619621], // centers to a specific area. In the case, Capitol Hill
+             zoom:14 // zooms into the neighborhood
+          });
+          // allows changes to the map's style
+         mymap.on('style.load', () => {
+    mymap.setConfigProperty('basemap', 'lightPreset', 'dusk'); // Changes the light to 'dusk'
+    mymap.setConfigProperty('basemap', 'showPointOfInterestLabels', false); // turns off point of interest labels
+    mymap.setConfigProperty('basemap', 'show3dObjects', false); // turns off 3D objects
+    mymap.setConfigProperty('basemap', 'showTransitLabels', true); // turn on transit labels
+});
+// code from the next step will go here!
+mymap.addControl(new mapboxgl.FullscreenControl()); // allows full-screen control
+mymap.addControl(new mapboxgl.NavigationControl()); // allows navigation control
+</script>
+</body>
+</html>
+
+<!-- Explanation for P3, Step 7: The two additional style changes I made to the map are turning off
+ 3D objects and showing transit labels. Turning off 3D objects takes away any multidimensions away from the program.
+ I noticed that turing off 3D objects, it allows the program to move smoother and faster. This can be useful for 
+ older devices that can't run applications as smooth as newer machines. Turning on transit labels shows highway names,
+ freeway names, and exits. This can be particularly useful for drivers to see what road they are on or looking for
+ and what exits are nearby. This map can be heavily utilized in GPS applications. -->

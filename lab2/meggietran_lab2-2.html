@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>World Cities Population Map</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link href="https://api.mapbox.com/mapbox-gl-js/v3.6.0/mapbox-gl.css" rel="stylesheet">
+    <script src="https://api.mapbox.com/mapbox-gl-js/v3.6.0/mapbox-gl.js"></script>
+    <style>
+        body { margin: 0; padding: 0; }
+        #map { position: absolute; top: 0; bottom: 0; width: 100%; }
+        /* Layout of the legend panel. */
+        /* Map title */
+        #map-title {
+            position: absolute;
+            left: 43%;
+            background: rgba(255, 255, 255, 0.94);
+            border-radius: 5px;
+            padding: 12px 22px;
+            border-radius: 5px;
+            text-align: center;
+        }
+        /* Map title header */
+        #map-title h1 {
+            margin: 0;
+            font-size: 21px;
+            color: #292929;
+        }
+        /* Map title context */
+        #map-title p {
+            margin: 5px 0 0;
+            font-size: 12px;
+            color: #555;
+        }
+        #legend {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 250px;
+            background: #fff;
+            margin-right: 20px;
+            margin-bottom: 40px;
+            padding: 10px 20px 10px 10px;
+            border-radius: 3px;
+            text-align: center;
+        }
+        /* Each row for a magnitude value. */
+        .break {
+            position: relative;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* The circular symbol. */
+        .dot {
+            display: inline-block;
+            margin-top: 5px;
+            border-radius: 50%;
+            opacity: 0.6;
+        }
+
+        /* Label next to the symbol. */
+        .dot-label {
+            position: absolute;
+            top: 0;
+            right: 0;
+            font-style: italic;
+        }
+
+        /* Link color within the legend. */
+        #legend a {
+            color: black;
+        }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+    <div id="legend"></div>
+    <div id="map-title">
+        <h1>World Cities Map</h1>
+        <p>Comparing urban population around the world</p>
+    </div>
+    <script>
+        mapboxgl.accessToken = 'pk.eyJ1IjoibWJudDY4IiwiYSI6ImNtdXd2eGVqZjAwM2QzNHEwcjlsaHpmcngifQ.OkO7lFPf7XsTQC4krb6vGQ';
+        const mymap = new mapboxgl.Map({
+            container: 'map',
+            // I chose this style because it adds more dimension and flair to the map,
+            // making it pleasant to look at while not being too much.
+            style: 'mapbox://styles/mapbox/standard',
+            projection: 'globe',
+            center: [0, 0],
+            zoom: 1
+        });
+
+        // Add the next steps here, inside this script.
+        mymap.on('load', () => {
+            // Load the local world cities GeoJSON.
+            mymap.addSource('population', {
+                type: 'geojson',
+                data: 'data/world-cities.geojson'
+            });
+            // Display every city using three population classes.
+            mymap.addLayer({
+                id: 'population-layer',
+                type: 'circle',
+                source: 'population',
+                paint: {
+                    // Three circle sizes.
+                    'circle-radius': [
+                        'step',
+                        ['to-number', ['get', 'population'], 0],
+                        4,
+                        1000000, 7,
+                        5000000, 11
+                    ],
+                    // Three population colors.
+                    'circle-color': [
+                        'step',
+                        ['to-number', ['get', 'population'], 0],
+                        '#43a2ca',
+                        1000000, '#0868ac',
+                        5000000, '#7a0177'
+                    ],
+                    'circle-opacity': 0.8,
+                    'circle-stroke-width': 0.7,
+                    'circle-stroke-color': '#ffffff'
+                }
+            });
+            // Click a city circle to view its name and population.
+            mymap.on('click', 'population-layer', (event) => {
+                const feature = event.features[0];
+                const coordinates = feature.geometry.coordinates.slice(0, 2);
+                const cityName = feature.properties.city;
+                const population = Number(feature.properties.population);
+                new mapboxgl.Popup()
+                    .setLngLat(coordinates)
+                    .setHTML(
+                        '<strong>City:</strong> ' + cityName +
+                        '<br><strong>Population:</strong> ' +
+                        (Number.isFinite(population)
+                            ? population.toLocaleString()
+                            : 'Not available')
+                    )
+                    .addTo(mymap);
+            });
+        });
+         const legend = document.getElementById('legend');
+        // I stuck with just three classes because I felt like more than that would 
+        // be too overwhelming for users to look at.
+        const grades = [
+            'Under 1,000,000',
+            '1-5 million',
+            '5 million+',
+        ];
+        // I chose these sizes because it isn't too small where it would cause eye strain
+        // but it isn't too big where it crowds the legend.
+        const radii = [7, 11, 16];
+        // I chose these colors because they blend well with the basemap while also
+        // stand out where you can tell what is what.
+        const colors = [
+            '#43a2ca',
+            '#0868ac',
+            '#7a0177'
+        ];
+        const labels = ['<strong>Population</strong>'];
+        for (let i = 0; i < grades.length; i++) {
+            const diameter = 2 * radii[i];
+            labels.push(
+                '<p class="break"><i class="dot" style="background:' + colors[i] +
+                '; width:' + diameter + 'px; height:' + diameter +
+                'px;"></i> <span class="dot-label" style="top:' +
+                diameter / 2 + 'px;">' + grades[i] + '</span></p>'
+            );
+        }
+        const source =
+            '<p style="text-align:right; font-size:10pt;">Source: ' +
+            '<a href="https://www.naturalearthdata.com/">' +
+            'Natural Earth</a></p>';
+
+        legend.innerHTML = labels.join('') + source;
+    </script>
+</body>
+</html>
